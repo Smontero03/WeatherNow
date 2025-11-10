@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherNow">
         <activity
+            android:name=".ui.screens.Register.RegisterScreen"
+            android:exported="false"
+            android:label="@string/title_activity_register_screen"
+            android:theme="@style/Theme.WeatherNow" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
