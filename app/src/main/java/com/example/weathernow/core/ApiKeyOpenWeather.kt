@@ -1,5 +1,5 @@
 package com.example.weathernow.core
-import com.example.weathernow.views.ProfileScreen
+//import com.example.weathernow.views.ProfileScreen
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -8,8 +8,8 @@ import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.weathernow.views.HomeScreen
-import com.example.weathernow.views.LoginScreen
+//import com.example.weathernow.views.HomeScreen
+//import com.example.weathernow.views.LoginScreen
 import com.example.weathernow.ui.theme.WeatherNowTheme
 
 class MainActivity : ComponentActivity() {
@@ -62,15 +62,18 @@ fun WeatherNowApp(createApiUrl: (String) -> String) {
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
             // TODO: Pass navController to LoginScreen for navigation
-            LoginScreen()
+           // LoginScreen()
+        }
+        composable(route = "register"){
+            //RegisterScreen()
         }
         composable("home") {
             // TODO: Pass the weather data and refresh callback to HomeScreen
-            HomeScreen()
+            //HomeScreen()
         }
         composable("profile") {
             // TODO: Pass navController to ProfileScreen for navigation
-            ProfileScreen()
+            //ProfileScreen()
         }
     }
 }
