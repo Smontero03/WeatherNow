@@ -10,7 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.weathernow.ui.theme.WeatherNowTheme
+import com.example.weathernow.theme.WeatherNowTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -159,13 +159,5 @@ fun ClimateChip(text: String, color: Color) {
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(text, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun MainMapScreenPreview() {
-    WeatherNowTheme {
-        MainMapScreen()
     }
 }

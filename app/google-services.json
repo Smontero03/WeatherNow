@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "300557082000",
+    "firebase_url": "https://weather-now-da358-default-rtdb.firebaseio.com",
+    "project_id": "weather-now-da358",
+    "storage_bucket": "weather-now-da358.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:300557082000:android:c29cbeedacfbbce2526715",
+        "android_client_info": {
+          "package_name": "com.example.weathernow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBh2PLgDBgmi5P5LVi9sDRLLtK4S7dp9Dg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
