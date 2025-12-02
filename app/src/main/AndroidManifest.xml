@@ -14,9 +14,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherNow">
         <activity
-            android:name=".ui.screens.Register.ui.RegisterActivity"
+            android:name=".MapActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.WeatherNow" />
+        <activity
+            android:name=".views.LoginActivity"
             android:exported="true"
-            android:label="@string/title_activity_register_screen"
+            android:label="@string/app_name"
             android:theme="@style/Theme.WeatherNow">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,6 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".views.RegisterActivity"
+            android:exported="false"
+            android:label="Register"
+            android:theme="@style/Theme.WeatherNow" />
     </application>
 
 </manifest>

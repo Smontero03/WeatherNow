@@ -1,32 +1,46 @@
 package com.example.weathernow.views
 
+import android.app.Activity
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.weathernow.ui.theme.WeatherNowTheme
-import com.example.weathernow.ui.theme.ButtonBlue
-import com.example.weathernow.ui.theme.LightGray
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.weathernow.MapActivity
+import com.example.weathernow.viewmodels.AuthViewModel
+import com.example.weathernow.views.theme.ButtonBlue
+import com.example.weathernow.views.theme.LightGray
+import com.example.weathernow.views.theme.WeatherNowTheme
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(authViewModel: AuthViewModel = viewModel()) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
+    val authState by authViewModel.authState
+    val context = LocalContext.current
+
+    LaunchedEffect(authState) {
+        if (authState == "logged") {
+            context.startActivity(Intent(context, MapActivity::class.java))
+            (context as? Activity)?.finish()
+        } else if (authState != null) {
+            Toast.makeText(context, authState, Toast.LENGTH_LONG).show()
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -44,7 +58,7 @@ fun LoginScreen() {
                 modifier = Modifier
                     .size(150.dp)
                     .clip(CircleShape)
-                    .background(Color.LightGray)
+                    .background(LightGray)
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
@@ -86,7 +100,7 @@ fun LoginScreen() {
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(
-                onClick = { /* TODO: Handle login */ },
+                onClick = { authViewModel.login(emailState.value, passwordState.value) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = ButtonBlue)
@@ -96,33 +110,29 @@ fun LoginScreen() {
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            TextButton(
-                onClick = { /* TODO: Handle password recovery */ }
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "Olvidé mi contraseña?",
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { /* TODO: Handle Google sign in */ },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = ButtonBlue)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Email, // Placeholder for Google icon
-                        contentDescription = "Google sign-in"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                TextButton(
+                    onClick = { /* TODO: Handle password recovery */ }
+                ) {
                     Text(
-                        text = "Inicia sesión con google",
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        text = "Olvidé mi contraseña?",
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                TextButton(
+                    onClick = { context.startActivity(Intent(context, RegisterActivity::class.java)) }
+                ) {
+                    Text(
+                        text = "Registrarse",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
+
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "Udistrital-2025 (c)",

@@ -3,8 +3,10 @@ package com.example.weathernow.viewmodels
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
 
@@ -13,6 +15,9 @@ class AuthViewModel : ViewModel() {
 
     private val _authMessage = mutableStateOf<String?>(null)
     val authMessage: State<String?> = _authMessage
+
+    private val _authState = mutableStateOf<String?>(null)
+    val authState: State<String?> = _authState
 
     fun registerUser(
         id: String,
@@ -47,5 +52,14 @@ class AuthViewModel : ViewModel() {
                     _authMessage.value = "Error en registro: ${task.exception?.message}"
                 }
             }
+    }
+
+    fun login(email: String, password: String) {
+        viewModelScope.launch {
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    _authState.value = if (task.isSuccessful) "logged" else task.exception?.message
+                }
+        }
     }
 }
