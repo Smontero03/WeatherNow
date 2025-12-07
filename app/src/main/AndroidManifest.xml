@@ -11,9 +11,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherNow">
-
         <activity
-            android:name=".view.LoginActivity"
+            android:name=".view.RegisterActivity"
+            android:exported="false"
+            android:label="@string/title_activity_login_up"
+            android:theme="@style/Theme.WeatherNow" />
+        <activity
+            android:name=".view.LoginScreen"
             android:exported="true"
             android:label="@string/title_activity_login"
             android:theme="@style/Theme.WeatherNow">
@@ -23,7 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MapActivity" />
+        <activity android:name=".view.MapActivity" />
     </application>
 
 </manifest>

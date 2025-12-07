@@ -3,4 +3,5 @@
     <string name="title_activity_map">MapActivity</string>
     <string name="title_activity_register_screen">RegisterScreen</string>
     <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_login_up">LoginUpActivity</string>
 </resources>
