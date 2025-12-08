@@ -24,16 +24,23 @@ class LoginViewModel : ViewModel() {
     private val _password = MutableStateFlow("")
     val password = _password.asStateFlow()
 
+    private val _emailError = MutableStateFlow<String?>(null)
+    val emailError = _emailError.asStateFlow()
+
     private val _loginUiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
     val loginUiState = _loginUiState.asStateFlow()
 
-    val isLoginButtonEnabled = combine(email, password) { email, password ->
-        // Simple validation for non-empty fields and email format
-        email.isNotBlank() && password.isNotBlank() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    val isLoginButtonEnabled = combine(email, password, emailError) { email, password, emailError ->
+        email.isNotBlank() && password.isNotBlank() && emailError == null
     }
 
     fun onEmailChange(newEmail: String) {
         _email.update { newEmail }
+        _emailError.value = if (newEmail.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+            "Correo electrónico inválido."
+        } else {
+            null
+        }
     }
 
     fun onPasswordChange(newPassword: String) {

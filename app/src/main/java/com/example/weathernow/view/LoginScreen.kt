@@ -1,11 +1,6 @@
 package com.example.weathernow.view
 
-import android.content.Intent
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,10 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -33,57 +31,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.weathernow.R
-import com.example.weathernow.theme.*
+import com.example.weathernow.theme.CardBackgroundColor
+import com.example.weathernow.theme.InputFieldColor
+import com.example.weathernow.theme.PrimaryButtonColor
+import com.example.weathernow.theme.ScriptFont
+import com.example.weathernow.theme.SecondaryButtonColor
+import com.example.weathernow.theme.TextColorDark
+import com.example.weathernow.view.shared.BackGroundImage
+import com.example.weathernow.view.shared.EmailField
+import com.example.weathernow.view.shared.ErrorField
+import com.example.weathernow.view.shared.HeaderImage
 import com.example.weathernow.viewmodel.LoginUiState
 import com.example.weathernow.viewmodel.LoginViewModel
 
-class LoginScreen : ComponentActivity() {
-
-    private val loginViewModel: LoginViewModel by viewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            LoginScreen(
-                loginViewModel,
-                onGoToMap = { goToMap() },
-                onGoToRegister = { goToRegister() }
-            )
-        }
-    }
-
-    fun goToMap() {
-        val intent = Intent(this, MapActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
-    }
-
-    private fun goToRegister() {
-        val intent = Intent(this, RegisterActivity::class.java)
-        startActivity(intent)
-    }
-}
-
 @Composable
 fun LoginScreen(
-    loginViewModel: LoginViewModel,
-    onGoToMap: () -> Unit,
-    onGoToRegister: () -> Unit
+    navController: NavController,
+    loginViewModel: LoginViewModel = viewModel()
 ) {
     val email by loginViewModel.email.collectAsState()
     val password by loginViewModel.password.collectAsState()
+    val emailError by loginViewModel.emailError.collectAsState()
     val loginUiState by loginViewModel.loginUiState.collectAsState()
     val isLoginButtonEnabled by loginViewModel.isLoginButtonEnabled.collectAsState(initial = false)
     val context = LocalContext.current
@@ -97,7 +75,8 @@ fun LoginScreen(
                 .padding(horizontal = 32.dp, vertical = 48.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(CardBackgroundColor)
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -105,14 +84,23 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
             TitleText(Modifier.align(Alignment.CenterHorizontally))
             Spacer(modifier = Modifier.height(24.dp))
-            EmailField(email, onEmailChange = { loginViewModel.onEmailChange(it) })
+            EmailField(
+                email = email,
+                error = emailError,
+                onEmailChange = { loginViewModel.onEmailChange(it) }
+            )
+            ErrorField(emailError)
             Spacer(modifier = Modifier.height(16.dp))
             PasswordField(password, onPasswordChange = { loginViewModel.onPasswordChange(it) })
             Spacer(modifier = Modifier.height(8.dp))
-            ForgotPassword(modifier = Modifier.align(Alignment.End))
+            ForgotPassword(modifier = Modifier.align(Alignment.End)) { navController.navigate("recovery") }
             Spacer(modifier = Modifier.height(16.dp))
 
-            LoginButton(enabled = isLoginButtonEnabled, onClick = { loginViewModel.login() })
+            if (loginUiState == LoginUiState.Loading) {
+                CircularProgressIndicator()
+            } else {
+                LoginButton(enabled = isLoginButtonEnabled, onClick = { loginViewModel.login() })
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -126,7 +114,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
             GoogleSignInButton()
             Spacer(modifier = Modifier.height(16.dp))
-            LoginUpLink(Modifier.align(Alignment.CenterHorizontally), onGoToRegister)
+            LoginUpLink(Modifier.align(Alignment.CenterHorizontally)) { navController.navigate("register") }
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Udistrital-2025 (c)",
@@ -138,12 +126,19 @@ fun LoginScreen(
     }
 
     when (loginUiState) {
-        is LoginUiState.Success -> onGoToMap()
+        is LoginUiState.Success -> {
+            navController.navigate("map") {
+                popUpTo("login") { inclusive = true }
+            }
+            loginViewModel.resetLoginState()
+        }
+
         is LoginUiState.Error -> {
             val message = (loginUiState as LoginUiState.Error).message
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             loginViewModel.resetLoginState()
         }
+
         else -> {}
     }
 }
@@ -170,36 +165,23 @@ fun LoginUpLink(modifier: Modifier, onGoToRegister: () -> Unit) {
 
 @Composable
 fun TitleText(modifier: Modifier) {
-    val scriptFont = FontFamily(
-        Font(R.font.great_vibes, FontWeight.Normal)
-    )
     Text(
         text = "Weather Now",
         fontSize = 45.sp,
-        fontFamily = scriptFont,
+        fontFamily = ScriptFont,
         color = Color.White,
         modifier = modifier.padding(bottom = 8.dp)
     )
 }
 
 @Composable
-fun BackGroundImage() {
-    Image(
-        painter = painterResource(id = R.drawable.login_background),
-        contentDescription = "Fondo de ciclista",
-        modifier = Modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop
-    )
-}
-
-@Composable
-fun ForgotPassword(modifier: Modifier) {
+fun ForgotPassword(modifier: Modifier, onForgotPassword: () -> Unit = {}) {
     Text(
         text = "¿Olvidaste la contraseña?",
         color = TextColorDark,
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
-        modifier = modifier.clickable { /* Lógica de recuperación de contraseña */ }
+        modifier = modifier.clickable { onForgotPassword() }
     )
 }
 
@@ -215,7 +197,7 @@ fun LoginButton(enabled: Boolean, onClick: () -> Unit) {
         colors = ButtonDefaults.buttonColors(
             containerColor = PrimaryButtonColor,
             contentColor = Color.White,
-            disabledContainerColor = SecondaryButtonColor,
+            disabledContainerColor = Color.Gray,
             disabledContentColor = Color.White
         )
     ) {
@@ -238,13 +220,13 @@ fun GoogleSignInButton() {
             contentDescription = "Google Icon",
             modifier = Modifier
                 .size(24.dp)
-                .padding(end = 8.dp)
         )
         Text(
             text = "Inicia sesión con Google",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
-            color = Color.White
+            color = Color.White,
+            modifier = Modifier.padding(start = 8.dp)
         )
     }
 }
@@ -272,33 +254,3 @@ fun PasswordField(password: String, onPasswordChange: (String) -> Unit) {
     )
 }
 
-@Composable
-fun EmailField(email: String, onEmailChange: (String) -> Unit) {
-    TextField(
-        value = email,
-        onValueChange = onEmailChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp)),
-        placeholder = { Text(text = "Correo", color = Color.Gray) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-        singleLine = true,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = InputFieldColor,
-            unfocusedContainerColor = InputFieldColor,
-            disabledContainerColor = InputFieldColor,
-            cursorColor = TextColorDark,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        )
-    )
-}
-
-@Composable
-fun HeaderImage(modifier: Modifier) {
-    Image(
-        painter = painterResource(id = R.drawable.app_logo),
-        contentDescription = "Logo de WeatherNow",
-        modifier = modifier.size(100.dp)
-    )
-}
