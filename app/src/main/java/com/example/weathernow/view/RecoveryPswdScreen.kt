@@ -1,10 +1,12 @@
 package com.example.weathernow.view
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +37,6 @@ import com.example.weathernow.theme.TextColorDark
 import com.example.weathernow.view.shared.BackGroundImage
 import com.example.weathernow.view.shared.EmailField
 import com.example.weathernow.view.shared.ErrorField
-import com.example.weathernow.view.shared.HeaderImage
 import com.example.weathernow.viewmodel.RecoveryUiState
 import com.example.weathernow.viewmodel.RecoveryViewModel
 
@@ -66,8 +67,16 @@ fun RecoveryPswdScreen(
                 is RecoveryUiState.Success -> {
                     SuccessMessage(navController, recoveryViewModel)
                 }
+
                 else -> {
-                    RecoveryForm(email, emailError, isButtonEnabled, recoveryViewModel, uiState)
+                    RecoveryForm(
+                        email,
+                        emailError,
+                        isButtonEnabled,
+                        recoveryViewModel,
+                        uiState,
+                        navController
+                    )
                 }
             }
         }
@@ -80,15 +89,15 @@ private fun ColumnScope.RecoveryForm(
     emailError: String?,
     isButtonEnabled: Boolean,
     recoveryViewModel: RecoveryViewModel,
-    uiState: RecoveryUiState
+    uiState: RecoveryUiState,
+    navController: NavController
 ) {
-    HeaderImage(Modifier.align(Alignment.CenterHorizontally))
     Spacer(modifier = Modifier.height(24.dp))
     Text(
         text = "Recuperar Contraseña",
         fontSize = 28.sp,
         fontWeight = FontWeight.Bold,
-        color = Color.White,
+        color = Color.Black,
         modifier = Modifier.padding(bottom = 8.dp)
     )
     Text(
@@ -99,9 +108,25 @@ private fun ColumnScope.RecoveryForm(
         modifier = Modifier.padding(bottom = 24.dp)
     )
     EmailField(email, emailError) { recoveryViewModel.onEmailChange(it) }
-    ErrorField(emailError) // Using the same ErrorField from RegisterScreen
+    ErrorField(emailError, Modifier.align(Alignment.Start))
+    Spacer(modifier = Modifier.height(16.dp))
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.clickable { navController.popBackStack() }
+    ) {
+        Text(
+            text = "Regresa a ",
+            color = TextColorDark,
+            fontSize = 14.sp
+        )
+        Text(
+            text = "iniciar sesión",
+            color = PrimaryButtonColor,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
     Spacer(modifier = Modifier.height(24.dp))
-
     if (uiState is RecoveryUiState.Loading) {
         CircularProgressIndicator(color = PrimaryButtonColor)
     } else {
@@ -117,10 +142,14 @@ private fun ColumnScope.RecoveryForm(
                 disabledContainerColor = Color.Gray
             )
         ) {
-            Text(text = "ENVIAR CORREO", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
+            Text(
+                text = "ENVIAR CORREO",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color.White
+            )
         }
     }
-
     if (uiState is RecoveryUiState.Error) {
         Text(
             text = uiState.message ?: "Error desconocido",
@@ -132,7 +161,7 @@ private fun ColumnScope.RecoveryForm(
 
 
 @Composable
-private fun ColumnScope.SuccessMessage(navController: NavController, recoveryViewModel: RecoveryViewModel) {
+private fun SuccessMessage(navController: NavController, recoveryViewModel: RecoveryViewModel) {
     Text(
         text = "¡Correo Enviado!",
         fontSize = 28.sp,

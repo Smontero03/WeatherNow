@@ -52,7 +52,14 @@ class RegisterViewModel : ViewModel() {
     // Button enabled state
     val isRegisterButtonEnabled = combine(
         listOf( // Envuelve tus Flows en una lista
-            fullName, email, password, confirmPassword,        fullNameError, emailError, passwordError, confirmPasswordError
+            fullName,
+            email,
+            password,
+            confirmPassword,
+            fullNameError,
+            emailError,
+            passwordError,
+            confirmPasswordError
         )
     ) { values -> // La lambda ahora recibe un solo parámetro 'values' que es un Array
         // Desestructuramos el array para mayor claridad
@@ -73,16 +80,20 @@ class RegisterViewModel : ViewModel() {
     // Field change handlers with validation
     fun onFullNameChange(newFullName: String) {
         _fullName.value = newFullName
-        _fullNameError.value = if (newFullName.any { it.isDigit() }) "No puede contener números." else null
+        _fullNameError.value =
+            if (newFullName.any { it.isDigit() }) "No puede contener números." else null
     }
 
     fun onEmailChange(newEmail: String) {
         _email.value = newEmail
-        _emailError.value = if (newEmail.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
-            "Correo electrónico inválido."
-        } else {
-            null
-        }
+        _emailError.value =
+            if (newEmail.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail)
+                    .matches()
+            ) {
+                "Correo electrónico inválido."
+            } else {
+                null
+            }
     }
 
     fun onPasswordChange(newPassword: String) {
@@ -94,17 +105,19 @@ class RegisterViewModel : ViewModel() {
         }
         // Also validate confirm password if it's not empty
         if (_confirmPassword.value.isNotBlank()) {
-            _confirmPasswordError.value = if (newPassword != _confirmPassword.value) "Las contraseñas no coinciden." else null
+            _confirmPasswordError.value =
+                if (newPassword != _confirmPassword.value) "Las contraseñas no coinciden." else null
         }
     }
 
     fun onConfirmPasswordChange(newConfirmPassword: String) {
         _confirmPassword.value = newConfirmPassword
-        _confirmPasswordError.value = if (newConfirmPassword.isNotBlank() && newConfirmPassword != _password.value) {
-            "Las contraseñas no coinciden."
-        } else {
-            null
-        }
+        _confirmPasswordError.value =
+            if (newConfirmPassword.isNotBlank() && newConfirmPassword != _password.value) {
+                "Las contraseñas no coinciden."
+            } else {
+                null
+            }
     }
 
     fun registerUser() {

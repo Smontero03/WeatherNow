@@ -20,7 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -46,6 +45,8 @@ import com.example.weathernow.theme.CardBackgroundColor
 import com.example.weathernow.theme.InputFieldColor
 import com.example.weathernow.theme.PrimaryButtonColor
 import com.example.weathernow.theme.TextColorDark
+import com.example.weathernow.view.shared.EmailField
+import com.example.weathernow.view.shared.ErrorField
 import com.example.weathernow.viewmodel.RegisterUiState
 import com.example.weathernow.viewmodel.RegisterViewModel
 
@@ -93,20 +94,23 @@ fun RegisterScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
             NameField(fullName, fullNameError) { registerViewModel.onFullNameChange(it) }
-            ErrorField(fullNameError)
+            ErrorField(fullNameError, Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(12.dp))
             EmailField(
                 email = email,
                 error = emailError,
                 onEmailChange = { registerViewModel.onEmailChange(it) }
             )
-            ErrorField(emailError)
+            ErrorField(emailError, Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(12.dp))
             PasswordField(password, passwordError) { registerViewModel.onPasswordChange(it) }
-            ErrorField(passwordError)
+            ErrorField(passwordError, Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(12.dp))
-            ConfirmPasswordField(confirmPassword, confirmPasswordError) { registerViewModel.onConfirmPasswordChange(it) }
-            ErrorField(confirmPasswordError)
+            ConfirmPasswordField(
+                confirmPassword,
+                confirmPasswordError
+            ) { registerViewModel.onConfirmPasswordChange(it) }
+            ErrorField(confirmPasswordError, Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(32.dp))
 
             if (registerUiState is RegisterUiState.Loading) {
@@ -242,39 +246,5 @@ fun RegisterButton(enabled: Boolean, onClick: () -> Unit) {
         )
     ) {
         Text(text = "REGISTRARSE", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-    }
-}
-
-@Composable
-fun EmailField(email: String, error: String?, onEmailChange: (String) -> Unit) {
-    TextField(
-        value = email,
-        onValueChange = onEmailChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp)),
-        placeholder = { Text(text = "Correo", color = Color.Gray) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-        singleLine = true,
-        isError = error != null,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = InputFieldColor,
-            unfocusedContainerColor = InputFieldColor,
-            disabledContainerColor = InputFieldColor,
-            cursorColor = TextColorDark,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        )
-    )
-}
-
-@Composable
-fun ErrorField(error: String?) {
-    if (error != null) {
-        Text(
-            text = error,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-        )
     }
 }

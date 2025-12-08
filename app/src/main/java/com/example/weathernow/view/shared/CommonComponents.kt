@@ -57,21 +57,12 @@ fun EmailField(email: String, error: String?, onEmailChange: (String) -> Unit) {
 }
 
 @Composable
-fun HeaderImage(modifier: Modifier) {
-    Image(
-        painter = painterResource(id = R.drawable.app_logo),
-        contentDescription = "Logo de WeatherNow",
-        modifier = modifier.size(100.dp)
-    )
-}
-
-@Composable
-fun ErrorField(error: String?) {
+fun ErrorField(error: String?, modifier: Modifier) {
     if (error != null) {
         Text(
             text = error,
             color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            modifier = modifier.padding(start = 16.dp, top = 4.dp)
         )
     }
 }
