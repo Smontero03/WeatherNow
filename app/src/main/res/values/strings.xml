@@ -2,4 +2,7 @@
     <string name="app_name">WeatherNow</string>
     <string name="title_activity_map">MapActivity</string>
     <string name="title_activity_register_screen">RegisterScreen</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_login_up">LoginUpActivity</string>
+    <string name="web_client_id">977987803696-pfblqdndk33hlljunkq20f4to7tsunnd.apps.googleusercontent.com</string>
 </resources>

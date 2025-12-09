@@ -1,4 +1,4 @@
-package com.example.weathernow.views.theme
+package com.example.weathernow.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
