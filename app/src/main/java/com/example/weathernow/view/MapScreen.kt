@@ -14,11 +14,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -32,11 +34,7 @@ import com.google.android.gms.location.LocationServices.getFusedLocationProvider
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.*
 
 @Composable
 fun MapScreen() {
@@ -100,6 +98,13 @@ fun MapScreenContent(weatherViewModel: WeatherViewModel = viewModel()) {
         position = CameraPosition.fromLatLngZoom(currentLocation, 12f)
     }
 
+    var startPoint by remember { mutableStateOf("") }
+    var destination by remember { mutableStateOf("") }
+    val directionsResponse = weatherViewModel.directionsResponse
+    val polylinePoints = directionsResponse?.routes?.firstOrNull()?.overviewPolyline?.points?.let {
+        weatherViewModel.decodePolyline(it)
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
@@ -113,6 +118,40 @@ fun MapScreenContent(weatherViewModel: WeatherViewModel = viewModel()) {
                 title = if (hasLocationPermission) "Mi ubicación" else "Bogotá",
                 snippet = if (hasLocationPermission) "Aquí estoy" else "Clima de Bogotá"
             )
+            if (polylinePoints != null) {
+                Polyline(points = polylinePoints, color = Color.Red, width = 5f)
+            }
+        }
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    TextField(
+                        value = startPoint,
+                        onValueChange = { startPoint = it },
+                        placeholder = { Text("Punto de partida") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = destination,
+                        onValueChange = { destination = it },
+                        placeholder = { Text("Destino") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = {
+                        weatherViewModel.fetchDirections(startPoint, destination, "AIzaSyCkBcPBDSpMMCfN2z4T23c8WQZ9BMeEI-E")
+                    }) {
+                        Text("Iniciar ruta")
+                    }
+                }
+            }
         }
         weatherViewModel.weather?.let { weather ->
             Card(
