@@ -5,7 +5,12 @@ import android.content.pm.PackageManager
 import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,6 +18,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -127,6 +133,47 @@ fun MapScreenContent(weatherViewModel: WeatherViewModel = viewModel()) {
                     )
                 }
             }
+        }
+
+        var isFormExpanded by remember { mutableStateOf(false) }
+        val formOptions = listOf("Soleado", "Nublado", "Lluvioso", "Ventoso")
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.End
+        ) {
+            AnimatedVisibility(visible = isFormExpanded) {
+                Card {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("¿Cómo está el clima?")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        formOptions.forEach { option ->
+                            Button(onClick = {
+                                isFormExpanded = false
+                                // Aquí puedes manejar la respuesta
+                            }) {
+                                Text(option)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Llenar formulario",
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { isFormExpanded = !isFormExpanded }
+                    .padding(8.dp)
+            )
         }
     }
 }
