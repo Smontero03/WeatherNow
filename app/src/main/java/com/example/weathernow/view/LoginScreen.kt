@@ -73,9 +73,19 @@ fun LoginScreen(
     val loginUiState by loginViewModel.loginUiState.collectAsState()
     val isLoginButtonEnabled by loginViewModel.isLoginButtonEnabled.collectAsState(initial = false)
     val context = LocalContext.current
-    val activity = context as ComponentActivity // Se necesita la Activity para Credential Manager
+    val activity = LocalContext.current as? ComponentActivity // Se necesita la Activity para Credential Manager
     val coroutineScope = rememberCoroutineScope()
     val nonce = "simple_nonce"
+
+    if (activity == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Error: no se pudo iniciar el inicio de sesión.")
+        }
+        return
+    }
 
     fun singInWithGoogleFlow() {
         val credentialManager = CredentialManager.create(context)
