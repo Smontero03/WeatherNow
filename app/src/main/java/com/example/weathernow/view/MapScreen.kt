@@ -1,9 +1,218 @@
 package com.example.weathernow.view
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Looper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.TextField
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.example.weathernow.viewmodel.WeatherViewModel
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices.getFusedLocationProviderClient
+import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.*
 
 @Composable
 fun MapScreen() {
-    Text(text = "Welcome to the Map Screen!")
+    MaterialTheme(
+        colorScheme = lightColorScheme()
+    ) {
+        MapScreenContent()
+    }
+}
+
+@Composable
+fun MapScreenContent(weatherViewModel: WeatherViewModel = viewModel()) {
+    val context = LocalContext.current
+    val fusedLocationClient = remember { getFusedLocationProviderClient(context) }
+    val bogota = LatLng(4.60971, -74.08175)
+
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            hasLocationPermission = granted
+        }
+    )
+
+    var currentLocation by remember { mutableStateOf(bogota) }
+
+    LaunchedEffect(Unit) {
+        weatherViewModel.fetchWeather(bogota.latitude, bogota.longitude)
+        if (!hasLocationPermission) {
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    LaunchedEffect(hasLocationPermission) {
+        if (hasLocationPermission) {
+            val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000L).build()
+
+            val callback = object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    result.lastLocation?.let { location ->
+                        val newLocation = LatLng(location.latitude, location.longitude)
+                        currentLocation = newLocation
+                        weatherViewModel.fetchWeather(newLocation.latitude, newLocation.longitude)
+                    }
+                }
+            }
+
+            fusedLocationClient.requestLocationUpdates(locationRequest, callback, Looper.getMainLooper())
+        }
+    }
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(currentLocation, 12f)
+    }
+
+    var startPoint by remember { mutableStateOf("") }
+    var destination by remember { mutableStateOf("") }
+    val directionsResponse = weatherViewModel.directionsResponse
+    val polylinePoints = directionsResponse?.routes?.firstOrNull()?.overviewPolyline?.points?.let {
+        weatherViewModel.decodePolyline(it)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            properties = MapProperties(
+                isMyLocationEnabled = hasLocationPermission
+            )
+        ) {
+            Marker(
+                state = MarkerState(position = currentLocation),
+                title = if (hasLocationPermission) "Mi ubicación" else "Bogotá",
+                snippet = if (hasLocationPermission) "Aquí estoy" else "Clima de Bogotá"
+            )
+            if (polylinePoints != null) {
+                Polyline(points = polylinePoints, color = Color.Red, width = 5f)
+            }
+        }
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    TextField(
+                        value = startPoint,
+                        onValueChange = { startPoint = it },
+                        placeholder = { Text("Punto de partida") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = destination,
+                        onValueChange = { destination = it },
+                        placeholder = { Text("Destino") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = {
+                        weatherViewModel.fetchDirections(startPoint, destination, "AIzaSyCkBcPBDSpMMCfN2z4T23c8WQZ9BMeEI-E")
+                    }) {
+                        Text("Iniciar ruta")
+                    }
+                }
+            }
+        }
+        weatherViewModel.weather?.let { weather ->
+            Card(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "${weather.temperature}°C")
+                    Text(text = weather.description)
+                    AsyncImage(
+                        model = "https://openweathermap.org/img/w/${weather.icon}.png",
+                        contentDescription = weather.description,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+            }
+        }
+
+        var isFormExpanded by remember { mutableStateOf(false) }
+        val formOptions = listOf("Soleado", "Nublado", "Lluvioso", "Ventoso")
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.End
+        ) {
+            AnimatedVisibility(visible = isFormExpanded) {
+                Card {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("¿Cómo está el clima?")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        formOptions.forEach { option ->
+                            Button(onClick = {
+                                isFormExpanded = false
+                                // Aquí puedes manejar la respuesta
+                            }) {
+                                Text(option)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Llenar formulario",
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { isFormExpanded = !isFormExpanded }
+                    .padding(8.dp)
+            )
+        }
+    }
 }
